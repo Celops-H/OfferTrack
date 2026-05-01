@@ -23,7 +23,6 @@ npm run preview          # 预览生产构建
 | `docs/ADR.md` | 架构决策（Electron + React + Zustand） |
 | `docs/PLAN.md` | 10 阶段执行计划 + Git 提交规范 |
 | `docs/UI-SPEC.md` | UI 视觉规范（流程节点、看板、日历、卡片） |
-| `docs/archive/` | 历史文档（已废弃） |
 
 重构核心变更：
 - 引入 Electron 桌面应用
@@ -69,7 +68,7 @@ InterviewRecord {
 
 ## 开发规范
 
-- Cursor 规则在 `.cursor/rules/project-conventions.mdc`：参考 ADR/PRD/PLAN 文档，不确定时向用户确认，使用 Git 规范开发
+- 参考 ADR/PRD/PLAN 文档，不确定时向用户确认，使用 Git 规范开发
 - 代码注释用中文
 - 样式：CSS Modules + Ant Design 组件
 - 类型：`src/types/index.ts` 是所有类型的单一来源
