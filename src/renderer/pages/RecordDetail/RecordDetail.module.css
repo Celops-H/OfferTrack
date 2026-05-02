@@ -3,9 +3,11 @@
   margin: 0 auto;
 }
 
-.backBtn {
+.topBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 16px;
-  padding-left: 0;
 }
 
 .infoCard {
@@ -29,20 +31,48 @@
   font-size: 13px;
 }
 
-.roundsSection {
+.section {
   background: #fff;
   border-radius: 8px;
   padding: 24px;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
-}
-
-.roundsHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
   margin-bottom: 16px;
 }
 
-.collapse {
-  background: transparent;
+.progressArea {
+  padding: 16px 0;
+}
+
+.scheduleList {
+  margin-bottom: 12px;
+}
+
+.scheduleItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.scheduleNodeName {
+  font-weight: 600;
+  min-width: 80px;
+}
+
+.scheduleInfo {
+  flex: 1;
+  color: #666;
+  font-size: 13px;
+}
+
+.addScheduleHint {
+  margin-top: 8px;
+}
+
+.scheduleForm label {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 13px;
+  color: #666;
 }

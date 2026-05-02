@@ -1,73 +1,44 @@
 import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import {
-  Button, Input, Select, Collapse, Rate, Popconfirm,
-  Typography, Descriptions, Space, Empty, Result, Divider
+  Button, Input, Select, Space, Typography, Descriptions, Empty, Result, Divider, Popconfirm, Modal
 } from 'antd'
 import {
-  ArrowLeftOutlined, PlusOutlined, DeleteOutlined,
-  LinkOutlined, EditOutlined, CheckOutlined, CloseOutlined
+  ArrowLeftOutlined, EditOutlined, CheckOutlined, CloseOutlined
 } from '@ant-design/icons'
 import dayjs from 'dayjs'
 import { useRecordStore } from '../../store/useRecordStore'
-import {
-  Stage, EndStatus, RoundType,
-  STAGE_LABEL, END_STATUS_LABEL, ROUND_TYPE_LABEL, INTERVIEW_FORMAT_LABEL,
-  STAGE_ORDER
-} from '../../types'
-import RoundForm from '../../components/RoundForm'
+import { INTERVIEW_FORMAT_LABEL } from '../../types'
 import StageProgress from '../../components/StageProgress'
 import styles from './RecordDetail.module.css'
 
-const { Title, Text, Link } = Typography
-const { Panel } = Collapse
-
-// 阶段下拉选项（含已结束子状态）
-const STAGE_OPTIONS = [
-  ...STAGE_ORDER.map((s) => ({ value: s, label: STAGE_LABEL[s] })),
-  { value: `${Stage.ENDED}:${EndStatus.OFFERED}`, label: `已结束·${END_STATUS_LABEL[EndStatus.OFFERED]}` },
-  { value: `${Stage.ENDED}:${EndStatus.REJECTED}`, label: `已结束·${END_STATUS_LABEL[EndStatus.REJECTED]}` },
-  { value: `${Stage.ENDED}:${EndStatus.DECLINED}`, label: `已结束·${END_STATUS_LABEL[EndStatus.DECLINED]}` },
-]
+const { Title, Text } = Typography
 
 export default function RecordDetail() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const { getRecordById, updateRecord, updateStage, addRound, deleteRound } = useRecordStore()
+  const { groups, records, updateRecord, deleteRecord, passStageNode, terminateStageNode, rollbackToStageNode, updateStageNodeSchedule } = useRecordStore()
 
-  const record = getRecordById(id!)
-  const [roundFormOpen, setRoundFormOpen] = useState(false)
+  const record = records.find((r) => r.id === id)
 
-  // 行内编辑状态
-  const [editingField, setEditingField] = useState<'companyName' | 'position' | 'interviewDocUrl' | null>(null)
+  const [editingField, setEditingField] = useState<'companyName' | 'position' | null>(null)
   const [editValue, setEditValue] = useState('')
+
+  // 节点排期编辑
+  const [schedulingNodeId, setSchedulingNodeId] = useState<string | null>(null)
+  const [scheduleForm, setScheduleForm] = useState<{ scheduledAt: string; format: 'video' | 'onsite' | 'phone'; duration: number }>({ scheduledAt: '', format: 'video', duration: 0 })
 
   if (!record) {
     return (
       <Result
         status="404"
         title="记录不存在"
-        subTitle="该记录可能已被删除"
         extra={<Button type="primary" onClick={() => navigate('/')}>返回列表</Button>}
       />
     )
   }
 
-  // 获取当前阶段对应的下拉值
-  const currentStageValue = record.stage === Stage.ENDED && record.endStatus
-    ? `${record.stage}:${record.endStatus}`
-    : record.stage
-
-  const handleStageChange = (value: string) => {
-    if (value.includes(':')) {
-      const [stage, endStatus] = value.split(':')
-      updateStage(record.id, stage as Stage, endStatus as EndStatus)
-    } else {
-      updateStage(record.id, value as Stage)
-    }
-  }
-
-  const startEdit = (field: 'companyName' | 'position' | 'interviewDocUrl') => {
+  const startEdit = (field: 'companyName' | 'position') => {
     setEditingField(field)
     setEditValue(record[field] ?? '')
   }
@@ -79,44 +50,56 @@ export default function RecordDetail() {
     }
   }
 
-  const cancelEdit = () => setEditingField(null)
-
-  // 轮次排序（按面试时间从早到晚）
-  const sortedRounds = [...record.rounds].sort(
-    (a, b) => new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime()
-  )
-
-  const getRoundTitle = (round: typeof record.rounds[number]) => {
-    const typeName = ROUND_TYPE_LABEL[round.type]
-    const roundNum = round.type === RoundType.TECHNICAL && round.techRoundNumber
-      ? ` 第${round.techRoundNumber}轮` : ''
-    const format = INTERVIEW_FORMAT_LABEL[round.format]
-    const time = dayjs(round.scheduledAt).format('MM-DD HH:mm')
-    return `${typeName}${roundNum} · ${format} · ${time}`
+  const handleDelete = () => {
+    deleteRecord(record.id)
+    navigate(-1)
   }
+
+  // 打开排期编辑
+  const openSchedule = (nodeId: string) => {
+    const node = record.stageNodes.find((n) => n.id === nodeId)
+    if (node) {
+      setSchedulingNodeId(nodeId)
+      setScheduleForm({
+        scheduledAt: node.scheduledAt || '',
+        format: node.format || 'video',
+        duration: node.duration || 0,
+      })
+    }
+  }
+
+  const saveSchedule = () => {
+    if (schedulingNodeId) {
+      updateStageNodeSchedule(record.id, schedulingNodeId, {
+        scheduledAt: scheduleForm.scheduledAt || undefined,
+        format: scheduleForm.format,
+        duration: scheduleForm.duration || undefined,
+      })
+      setSchedulingNodeId(null)
+    }
+  }
+
+  // 有排期的节点
+  const scheduledNodes = record.stageNodes.filter((n) => n.scheduledAt)
 
   return (
     <div className={styles.container}>
-      {/* 返回导航 */}
-      <Button
-        type="text"
-        icon={<ArrowLeftOutlined />}
-        onClick={() => navigate(-1)}
-        className={styles.backBtn}
-      >
-        返回
-      </Button>
+      <div className={styles.topBar}>
+        <Button type="text" icon={<ArrowLeftOutlined />} onClick={() => navigate(-1)}>返回</Button>
+        <Popconfirm title="确认删除该记录？" onConfirm={handleDelete} okText="删除" cancelText="取消" okButtonProps={{ danger: true }}>
+          <Button danger>删除记录</Button>
+        </Popconfirm>
+      </div>
 
       {/* 基本信息区 */}
       <div className={styles.infoCard}>
-        {/* 公司名 */}
         <div className={styles.infoRow}>
           <Text type="secondary" className={styles.infoLabel}>公司名</Text>
           {editingField === 'companyName' ? (
             <Space>
               <Input value={editValue} onChange={(e) => setEditValue(e.target.value)} style={{ width: 200 }} autoFocus onPressEnter={confirmEdit} />
               <Button size="small" type="primary" icon={<CheckOutlined />} onClick={confirmEdit} />
-              <Button size="small" icon={<CloseOutlined />} onClick={cancelEdit} />
+              <Button size="small" icon={<CloseOutlined />} onClick={() => setEditingField(null)} />
             </Space>
           ) : (
             <Space>
@@ -126,14 +109,13 @@ export default function RecordDetail() {
           )}
         </div>
 
-        {/* 岗位 */}
         <div className={styles.infoRow}>
           <Text type="secondary" className={styles.infoLabel}>岗位</Text>
           {editingField === 'position' ? (
             <Space>
               <Input value={editValue} onChange={(e) => setEditValue(e.target.value)} style={{ width: 200 }} autoFocus onPressEnter={confirmEdit} />
               <Button size="small" type="primary" icon={<CheckOutlined />} onClick={confirmEdit} />
-              <Button size="small" icon={<CloseOutlined />} onClick={cancelEdit} />
+              <Button size="small" icon={<CloseOutlined />} onClick={() => setEditingField(null)} />
             </Space>
           ) : (
             <Space>
@@ -143,38 +125,14 @@ export default function RecordDetail() {
           )}
         </div>
 
-        {/* 当前阶段 */}
         <div className={styles.infoRow}>
-          <Text type="secondary" className={styles.infoLabel}>当前阶段</Text>
-          <Space direction="vertical" size={8}>
-            <Select
-              value={currentStageValue}
-              onChange={handleStageChange}
-              options={STAGE_OPTIONS}
-              style={{ width: 200 }}
-            />
-            <StageProgress stage={record.stage} endStatus={record.endStatus} />
-          </Space>
-        </div>
-
-        {/* 面经链接 */}
-        <div className={styles.infoRow}>
-          <Text type="secondary" className={styles.infoLabel}>面经链接</Text>
-          {editingField === 'interviewDocUrl' ? (
-            <Space>
-              <Input value={editValue} onChange={(e) => setEditValue(e.target.value)} style={{ width: 300 }} placeholder="https://..." autoFocus onPressEnter={confirmEdit} />
-              <Button size="small" type="primary" icon={<CheckOutlined />} onClick={confirmEdit} />
-              <Button size="small" icon={<CloseOutlined />} onClick={cancelEdit} />
-            </Space>
-          ) : (
-            <Space>
-              {record.interviewDocUrl
-                ? <Link href={record.interviewDocUrl} target="_blank"><LinkOutlined /> {record.interviewDocUrl}</Link>
-                : <Text type="secondary">未填写</Text>
-              }
-              <Button type="text" size="small" icon={<EditOutlined />} onClick={() => startEdit('interviewDocUrl')} />
-            </Space>
-          )}
+          <Text type="secondary" className={styles.infoLabel}>所属组</Text>
+          <Select
+            value={record.groupId}
+            onChange={(value) => updateRecord(record.id, { groupId: value })}
+            style={{ width: 200 }}
+            options={groups.map((g) => ({ value: g.id, label: g.name }))}
+          />
         </div>
 
         <Descriptions size="small" style={{ marginTop: 8 }}>
@@ -185,70 +143,98 @@ export default function RecordDetail() {
 
       <Divider />
 
-      {/* 面试轮次区 */}
-      <div className={styles.roundsSection}>
-        <div className={styles.roundsHeader}>
-          <Title level={5} style={{ margin: 0 }}>面试轮次（{record.rounds.length}）</Title>
-          <Button type="primary" icon={<PlusOutlined />} onClick={() => setRoundFormOpen(true)}>
-            添加轮次
-          </Button>
+      {/* 面试流程区 */}
+      <div className={styles.section}>
+        <Title level={5}>面试流程</Title>
+        <div className={styles.progressArea}>
+          <StageProgress
+            nodes={record.stageNodes}
+            detailMode
+            onPass={(nodeId) => passStageNode(record.id, nodeId)}
+            onTerminate={(nodeId) => terminateStageNode(record.id, nodeId)}
+            onRollback={(nodeId) => rollbackToStageNode(record.id, nodeId)}
+            onRestore={(nodeId) => rollbackToStageNode(record.id, nodeId)}
+          />
         </div>
-
-        {sortedRounds.length === 0 ? (
-          <Empty description="暂无面试轮次，点击「添加轮次」记录" style={{ marginTop: 40 }} />
-        ) : (
-          <Collapse accordion className={styles.collapse}>
-            {sortedRounds.map((round) => (
-              <Panel
-                key={round.id}
-                header={getRoundTitle(round)}
-                extra={
-                  <Popconfirm
-                    title="确认删除该轮次？"
-                    onConfirm={(e) => { e?.stopPropagation(); deleteRound(record.id, round.id) }}
-                    okText="删除"
-                    cancelText="取消"
-                    okButtonProps={{ danger: true }}
-                  >
-                    <Button
-                      type="text"
-                      danger
-                      size="small"
-                      icon={<DeleteOutlined />}
-                      onClick={(e) => e.stopPropagation()}
-                    />
-                  </Popconfirm>
-                }
-              >
-                <Descriptions column={2} size="small">
-                  <Descriptions.Item label="轮次类型">{ROUND_TYPE_LABEL[round.type]}</Descriptions.Item>
-                  {round.type === RoundType.TECHNICAL && round.techRoundNumber && (
-                    <Descriptions.Item label="技术面轮次">第 {round.techRoundNumber} 轮</Descriptions.Item>
-                  )}
-                  <Descriptions.Item label="面试形式">{INTERVIEW_FORMAT_LABEL[round.format]}</Descriptions.Item>
-                  <Descriptions.Item label="面试时间">{dayjs(round.scheduledAt).format('YYYY-MM-DD HH:mm')}</Descriptions.Item>
-                  {round.duration && <Descriptions.Item label="时长">{round.duration} 分钟</Descriptions.Item>}
-                  {round.selfRating && (
-                    <Descriptions.Item label="自我评分">
-                      <Rate disabled defaultValue={round.selfRating} count={5} />
-                    </Descriptions.Item>
-                  )}
-                </Descriptions>
-              </Panel>
-            ))}
-          </Collapse>
-        )}
       </div>
 
-      {/* 轮次录入表单 */}
-      <RoundForm
-        open={roundFormOpen}
-        onCancel={() => setRoundFormOpen(false)}
-        onSubmit={(round) => {
-          addRound(record.id, round)
-          setRoundFormOpen(false)
-        }}
-      />
+      <Divider />
+
+      {/* 节点排期区 */}
+      <div className={styles.section}>
+        <Title level={5}>节点排期</Title>
+        {scheduledNodes.length === 0 ? (
+          <Empty description="暂无排期，点击流程中的节点圆点后可设置排期" image={Empty.PRESENTED_IMAGE_SIMPLE} />
+        ) : (
+          <div className={styles.scheduleList}>
+            {scheduledNodes
+              .sort((a, b) => a.order - b.order)
+              .map((node) => (
+                <div key={node.id} className={styles.scheduleItem}>
+                  <span className={styles.scheduleNodeName}>{node.name}</span>
+                  <span className={styles.scheduleInfo}>
+                    {node.scheduledAt ? dayjs(node.scheduledAt).format('YYYY-MM-DD HH:mm') : '未设置时间'}
+                    {node.format && ` · ${INTERVIEW_FORMAT_LABEL[node.format]}`}
+                    {node.duration ? ` · ${node.duration}分钟` : ''}
+                  </span>
+                  <Button type="link" size="small" onClick={() => openSchedule(node.id)}>编辑</Button>
+                </div>
+              ))}
+          </div>
+        )}
+        {/* 也可以为已通过/进行中节点添加排期 */}
+        <div className={styles.addScheduleHint}>
+          {record.stageNodes
+            .filter((n) => !n.scheduledAt && (n.status === 'ongoing' || n.status === 'passed'))
+            .sort((a, b) => a.order - b.order)
+            .map((n) => (
+              <Button key={n.id} type="dashed" size="small" onClick={() => openSchedule(n.id)} style={{ marginRight: 8, marginBottom: 8 }}>
+                为「{n.name}」添加排期
+              </Button>
+            ))}
+        </div>
+      </div>
+
+      {/* 排期编辑弹窗 */}
+      <Modal
+        title="编辑节点排期"
+        open={!!schedulingNodeId}
+        onOk={saveSchedule}
+        onCancel={() => setSchedulingNodeId(null)}
+        okText="保存"
+        cancelText="取消"
+      >
+        <div className={styles.scheduleForm}>
+          <label>面试时间</label>
+          <Input
+            type="datetime-local"
+            value={scheduleForm.scheduledAt ? dayjs(scheduleForm.scheduledAt).format('YYYY-MM-DDTHH:mm') : ''}
+            onChange={(e) => {
+              const v = e.target.value
+              setScheduleForm((f) => ({ ...f, scheduledAt: v ? new Date(v).toISOString() : '' }))
+            }}
+            style={{ marginBottom: 12 }}
+          />
+          <label>面试形式</label>
+          <Select
+            value={scheduleForm.format}
+            onChange={(v) => setScheduleForm((f) => ({ ...f, format: v }))}
+            style={{ width: '100%', marginBottom: 12 }}
+            options={[
+              { value: 'video', label: '视频' },
+              { value: 'onsite', label: '现场' },
+              { value: 'phone', label: '电话' },
+            ]}
+          />
+          <label>时长（分钟）</label>
+          <Input
+            type="number"
+            value={scheduleForm.duration || ''}
+            onChange={(e) => setScheduleForm((f) => ({ ...f, duration: Number(e.target.value) || 0 }))}
+            placeholder="60"
+          />
+        </div>
+      </Modal>
     </div>
   )
 }
