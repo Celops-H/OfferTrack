@@ -1,5 +1,5 @@
 interface ElectronAPI {
-  exportData: (data: string) => Promise<void>
+  exportData: (data: string) => Promise<boolean>
   importData: () => Promise<string | null>
   closeApp: () => void
 }
