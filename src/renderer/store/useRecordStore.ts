@@ -148,6 +148,16 @@ export const useRecordStore = create<RecordState>()(
         }))
       },
 
+      updateStageNodes: (recordId: string, nodes: StageNode[]) => {
+        set((s) => ({
+          records: s.records.map((r) =>
+            r.id === recordId
+              ? { ...r, stageNodes: nodes, updatedAt: now() }
+              : r,
+          ),
+        }))
+      },
+
       getRecordById: (id: string) => {
         return get().records.find((r) => r.id === id)
       },

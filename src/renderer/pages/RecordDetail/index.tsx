@@ -9,6 +9,7 @@ import {
 import dayjs from 'dayjs'
 import { useRecordStore } from '../../store/useRecordStore'
 import { INTERVIEW_FORMAT_LABEL } from '../../types'
+import type { StageNode } from '../../types'
 import StageProgress from '../../components/StageProgress'
 import styles from './RecordDetail.module.css'
 
@@ -17,7 +18,7 @@ const { Title, Text } = Typography
 export default function RecordDetail() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const { groups, records, updateRecord, deleteRecord, passStageNode, terminateStageNode, rollbackToStageNode, updateStageNodeSchedule } = useRecordStore()
+  const { groups, stageTemplates, records, updateRecord, deleteRecord, passStageNode, terminateStageNode, rollbackToStageNode, updateStageNodeSchedule, updateStageNodes } = useRecordStore()
 
   const record = records.find((r) => r.id === id)
 
@@ -27,6 +28,10 @@ export default function RecordDetail() {
   // 节点排期编辑
   const [schedulingNodeId, setSchedulingNodeId] = useState<string | null>(null)
   const [scheduleForm, setScheduleForm] = useState<{ scheduledAt: string; format: 'video' | 'onsite' | 'phone'; duration: number }>({ scheduledAt: '', format: 'video', duration: 0 })
+
+  // 编辑流程弹窗
+  const [editFlowOpen, setEditFlowOpen] = useState(false)
+  const [editNodes, setEditNodes] = useState<StageNode[]>([])
 
   if (!record) {
     return (
@@ -81,6 +86,64 @@ export default function RecordDetail() {
 
   // 有排期的节点
   const scheduledNodes = record.stageNodes.filter((n) => n.scheduledAt)
+
+  // 打开编辑流程弹窗
+  const openEditFlow = () => {
+    setEditNodes(record.stageNodes.map((n) => ({ ...n })))
+    setEditFlowOpen(true)
+  }
+
+  // 编辑流程：添加节点
+  const addNodeToEdit = (templateId: string) => {
+    const tpl = stageTemplates.find((t) => t.id === templateId)
+    if (!tpl) return
+    const newNode: StageNode = {
+      id: crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`,
+      templateId: tpl.id,
+      name: tpl.name,
+      order: editNodes.length,
+      status: 'pending',
+    }
+    setEditNodes([...editNodes, newNode])
+  }
+
+  // 编辑流程：删除节点
+  const removeNodeFromEdit = (nodeId: string) => {
+    const node = editNodes.find((n) => n.id === nodeId)
+    if (!node) return
+    // 只能删除 pending 节点
+    if (node.status !== 'pending') return
+    setEditNodes(editNodes.filter((n) => n.id !== nodeId).map((n, i) => ({ ...n, order: i })))
+  }
+
+  // 编辑流程：移动节点
+  const moveNode = (index: number, direction: 'up' | 'down') => {
+    const newNodes = [...editNodes]
+    const target = direction === 'up' ? index - 1 : index + 1
+    if (target < 0 || target >= newNodes.length) return
+    ;[newNodes[index], newNodes[target]] = [newNodes[target], newNodes[index]]
+    setEditNodes(newNodes.map((n, i) => ({ ...n, order: i })))
+  }
+
+  // 保存编辑流程
+  const saveEditFlow = () => {
+    // 保留原有节点的排期信息
+    const merged = editNodes.map((n) => {
+      const existing = record.stageNodes.find((en) => en.id === n.id)
+      if (existing) {
+        const { scheduledAt, format, duration } = existing
+        return { ...n, scheduledAt, format, duration }
+      }
+      return n
+    })
+    updateStageNodes(record.id, merged)
+    setEditFlowOpen(false)
+  }
+
+  // 可添加的模板（不在编辑列表中或为新节点）
+  const availableTemplates = stageTemplates.filter(
+    (t) => !editNodes.some((n) => n.templateId === t.id),
+  )
 
   return (
     <div className={styles.container}>
@@ -145,7 +208,10 @@ export default function RecordDetail() {
 
       {/* 面试流程区 */}
       <div className={styles.section}>
-        <Title level={5}>面试流程</Title>
+        <div className={styles.sectionHeader}>
+          <Title level={5} style={{ margin: 0 }}>面试流程</Title>
+          <Button size="small" onClick={openEditFlow}>编辑流程</Button>
+        </div>
         <div className={styles.progressArea}>
           <StageProgress
             nodes={record.stageNodes}
@@ -194,6 +260,49 @@ export default function RecordDetail() {
             ))}
         </div>
       </div>
+
+      {/* 编辑流程弹窗 */}
+      <Modal
+        title="编辑流程节点"
+        open={editFlowOpen}
+        onOk={saveEditFlow}
+        onCancel={() => setEditFlowOpen(false)}
+        okText="保存"
+        cancelText="取消"
+        width={520}
+      >
+        <div className={styles.editFlowList}>
+          {editNodes.map((node, index) => (
+            <div key={node.id} className={styles.editFlowItem}>
+              <div className={styles.editFlowInfo}>
+                <span className={styles.editFlowName}>{node.name}</span>
+                {node.status !== 'pending' && (
+                  <span className={styles.editFlowStatus}>
+                    {node.status === 'passed' ? '已通过' : node.status === 'ongoing' ? '进行中' : '已终止'}
+                  </span>
+                )}
+              </div>
+              <div className={styles.editFlowActions}>
+                <Button size="small" disabled={index === 0} onClick={() => moveNode(index, 'up')}>↑</Button>
+                <Button size="small" disabled={index === editNodes.length - 1} onClick={() => moveNode(index, 'down')}>↓</Button>
+                {node.status === 'pending' && (
+                  <Button size="small" danger onClick={() => removeNodeFromEdit(node.id)}>删除</Button>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+        {availableTemplates.length > 0 && (
+          <div style={{ marginTop: 16 }}>
+            <div style={{ marginBottom: 8, color: '#666', fontSize: 13 }}>添加节点：</div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+              {availableTemplates.map((t) => (
+                <Button key={t.id} size="small" onClick={() => addNodeToEdit(t.id)}>+ {t.name}</Button>
+              ))}
+            </div>
+          </div>
+        )}
+      </Modal>
 
       {/* 排期编辑弹窗 */}
       <Modal

@@ -80,6 +80,7 @@ export interface RecordState {
   addRecord: (groupId: string, companyName: string, position: string, selectedTemplateIds: string[]) => void
   deleteRecord: (id: string) => void
   updateRecord: (id: string, fields: Partial<Pick<InterviewRecord, 'companyName' | 'position' | 'groupId'>>) => void
+  updateStageNodes: (recordId: string, nodes: StageNode[]) => void
   getRecordById: (id: string) => InterviewRecord | undefined
 
   // 流程节点操作
