@@ -3,11 +3,11 @@ productName: OfferTrack
 directories:
   buildResources: resources
   output: release
+icon: resources/icon.png
 files:
   - out
   - package.json
 win:
-  icon: resources/icon.png
   target:
     - portable
   artifactName: ${name}-${version}-portable.${ext}
