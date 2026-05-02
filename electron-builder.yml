@@ -8,9 +8,12 @@ files:
   - package.json
 win:
   target:
-    - nsis
-  artifactName: ${name}-${version}-setup.${ext}
+    - portable
+  artifactName: ${name}-${version}-portable.${ext}
+  signAndEditExecutable: false
+  forceCodeSigning: false
 nsis:
   oneClick: false
   allowToChangeInstallationDirectory: true
   shortcutName: OfferTrack
+npmRebuild: false
