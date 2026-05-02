@@ -6,70 +6,77 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ```bash
 npm install              # 安装依赖
-npm run dev              # 启动 Vite 开发服务器（http://localhost:5173）
-npm run build            # TypeScript 检查 + Vite 生产构建，输出到 dist/
-npm run preview          # 预览生产构建
+npm run dev              # 启动 Electron 开发模式（独立窗口 + HMR）
+npm run build            # electron-vite 生产构建，输出到 out/
+npm run build:win        # 构建 Windows 便携版（release/*.exe）
+npm run build:win:nsis   # 构建 Windows 安装包（需开启 Windows 开发者模式）
 ```
 
-## 当前状态
+## 架构概览
 
-**v1.0 代码 + v2.0 重构待开始。** 重构工作在 `refactor/v2.0` 分支上进行。
+Electron 桌面应用，主进程 + 渲染进程架构。数据通过 Zustand `persist` 中间件存于 `localStorage`（key: `offer-track-storage`）。
 
-重构文档在 `docs/` 目录：
-
-| 文档 | 内容 |
-|------|------|
-| `docs/PRD.md` | 产品需求 v2.0 |
-| `docs/ADR.md` | 架构决策（Electron + React + Zustand） |
-| `docs/PLAN.md` | 10 阶段执行计划 + Git 提交规范 |
-| `docs/UI-SPEC.md` | UI 视觉规范（流程节点、看板、日历、卡片） |
-
-重构核心变更：
-- 引入 Electron 桌面应用
-- 面试组（Group）管理
-- 全局流程节点模板 + 记录内节点快照，替换固定 Stage 枚举
-- 删除 Round/RoundType/面试轮次，排期信息直接放在 StageNode 上
-- 删除面经链接（interviewDocUrl）和自评分（selfRating）
-- 看板动态列 + 面试组筛选
-- 日历时间展示 + hover Popover
-- JSON 导入导出（Electron 原生对话框）
-
-## v1.0 架构概览（当前代码）
-
-纯前端 SPA，无后端。数据通过 Zustand `persist` 中间件存于 `localStorage`（key: `offer-track-storage`）。
+### 项目结构
 
 ```
-App.tsx (React Router v6)
-├── Layout（导航壳 + Outlet）
-│   ├── /           → RecordList   （记录列表主页）
-│   ├── /board      → Board        （看板）
-│   └── /calendar   → Calendar     （日历）
-└── /record/:id     → RecordDetail （记录详情，独立路由无 Layout）
+electron/                  # Electron 主进程 & 预加载
+├── main.ts                # 窗口管理、IPC（导入导出对话框）
+└── preload.ts             # contextBridge 暴露 electronAPI
+
+src/renderer/              # React 渲染进程
+├── main.tsx               # 入口（HashRouter）
+├── App.tsx                # 路由定义
+├── types/index.ts         # 所有类型定义（单一来源）
+├── store/useRecordStore.ts # Zustand store（含 v1.0→v2.0 迁移）
+├── components/
+│   ├── Layout/            # 导航壳 + 导入导出按钮
+│   ├── RecordCard/        # 记录卡片
+│   └── StageProgress/     # 流程节点进度条（圆点──圆点）
+└── pages/
+    ├── GroupList/         # 面试组列表（主页 /）
+    ├── RecordList/        # 组内记录列表（/group/:groupId）
+    ├── RecordDetail/      # 记录详情 + 流程操作（/record/:id）
+    ├── Board/             # 看板动态列（/board）
+    ├── Calendar/          # 日历 + Popover（/calendar）
+    └── Settings/          # 流程节点模板管理（/settings）
 ```
 
-**数据流：** 所有业务状态集中在 `src/store/useRecordStore.ts`，页面通过 store hooks 读写。
+### 路由
 
-**v1.0 数据模型（v2.0 将全部替换）：**
+| 路径 | 页面 | 说明 |
+|------|------|------|
+| `/` | GroupList | 主页，面试组卡片列表 |
+| `/group/:groupId` | RecordList | 组内记录，搜索/筛选/分页 |
+| `/record/:id` | RecordDetail | 记录详情，节点推进/终止/撤回 |
+| `/board` | Board | 动态列看板 + 组筛选 |
+| `/calendar` | Calendar | 月历 + hover Popover |
+| `/settings` | Settings | 流程节点模板 CRUD |
+
+### 数据模型
 
 ```typescript
-// 将删除
-Stage = 'screening' | 'technical' | 'hr' | 'offer' | 'ended'
-EndStatus = 'offered' | 'rejected' | 'declined'
-RoundType = 'written' | 'technical' | 'hr' | 'other'
-InterviewFormat = 'video' | 'onsite' | 'phone'
+type StageNodeStatus = 'pending' | 'ongoing' | 'passed' | 'terminated'
 
-InterviewRecord {
-  stage: Stage
-  endStatus?: EndStatus
-  interviewDocUrl?: string  // 删除
-  rounds: Round[]           // 删除，排期移到 StageNode
-}
+Group           { id, name, createdAt, updatedAt }
+StageTemplate   { id, name, order, createdAt, updatedAt }
+StageNode       { id, templateId, name, order, status,
+                  scheduledAt?, format?, duration? }
+InterviewRecord { id, groupId, companyName, position,
+                  stageNodes[], isEnded, endReason?,
+                  createdAt, updatedAt }
 ```
+
+### 关键设计
+
+- **快照策略**：新建记录时从模板复制节点，模板变更不影响已有记录
+- **节点排期**：排期信息直接放在 StageNode 上（时间/形式/时长），日历事件来源于有 `scheduledAt` 的节点
+- **结束推导**：`isEnded`/`endReason` 由节点状态推导并冗余存储
+- **数据迁移**：Zustand persist `version: 1` + `migrate`，v1.0 旧数据自动迁移
 
 ## 开发规范
 
-- 参考 ADR/PRD/PLAN 文档，不确定时向用户确认，使用 Git 规范开发
+- 架构参考 `docs/ADR.md`，产品参考 `docs/PRD.md`，UI 参考 `docs/UI-SPEC.md`
+- 不确定时向用户确认，使用 Git 规范开发
 - 代码注释用中文
 - 样式：CSS Modules + Ant Design 组件
-- 类型：`src/types/index.ts` 是所有类型的单一来源
-- 重构分支：`refactor/v2.0`，每阶段一个 commit，完成后合并到 `master`
+- 类型：`src/renderer/types/index.ts` 是所有类型的单一来源
