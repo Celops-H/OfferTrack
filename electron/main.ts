@@ -10,6 +10,7 @@ function createWindow(): void {
     minWidth: 900,
     minHeight: 600,
     title: 'OfferTrack',
+    icon: join(__dirname, '../../resources/icon.png'),
     webPreferences: {
       preload: join(__dirname, 'preload.js'),
       sandbox: false
