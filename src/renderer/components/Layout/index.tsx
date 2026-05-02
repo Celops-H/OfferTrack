@@ -1,6 +1,6 @@
 import { Layout as AntLayout, Menu } from 'antd'
 import { Outlet, useNavigate, useLocation } from 'react-router-dom'
-import { UnorderedListOutlined, AppstoreOutlined, CalendarOutlined } from '@ant-design/icons'
+import { UnorderedListOutlined, AppstoreOutlined, CalendarOutlined, SettingOutlined } from '@ant-design/icons'
 
 const { Header, Content } = AntLayout
 
@@ -8,6 +8,7 @@ const navItems = [
   { key: '/', label: '记录列表', icon: <UnorderedListOutlined /> },
   { key: '/board', label: '看板', icon: <AppstoreOutlined /> },
   { key: '/calendar', label: '日历', icon: <CalendarOutlined /> },
+  { key: '/settings', label: '设置', icon: <SettingOutlined /> },
 ]
 
 export default function Layout() {

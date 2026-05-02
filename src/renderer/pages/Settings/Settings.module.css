@@ -1,0 +1,25 @@
+.container {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.header h2 {
+  margin: 0;
+}
+
+.alert {
+  margin-bottom: 16px;
+}
+
+.usage {
+  color: #999;
+  font-size: 13px;
+}

@@ -64,6 +64,35 @@ export interface RecordState {
   groups: Group[]
   stageTemplates: StageTemplate[]
   records: InterviewRecord[]
+
+  // 面试组
+  addGroup: (name: string) => void
+  renameGroup: (id: string, name: string) => void
+  deleteGroup: (id: string) => boolean
+
+  // 流程节点模板
+  addStageTemplate: (name: string) => void
+  renameStageTemplate: (id: string, name: string) => void
+  deleteStageTemplate: (id: string) => boolean
+  reorderStageTemplates: (ids: string[]) => void
+
+  // 记录
+  addRecord: (groupId: string, companyName: string, position: string, selectedTemplateIds: string[]) => void
+  deleteRecord: (id: string) => void
+  updateRecord: (id: string, fields: Partial<Pick<InterviewRecord, 'companyName' | 'position' | 'groupId'>>) => void
+  getRecordById: (id: string) => InterviewRecord | undefined
+
+  // 流程节点操作
+  passStageNode: (recordId: string, nodeId: string) => void
+  terminateStageNode: (recordId: string, nodeId: string) => void
+  rollbackToStageNode: (recordId: string, nodeId: string) => void
+
+  // 节点排期
+  updateStageNodeSchedule: (recordId: string, nodeId: string, schedule: { scheduledAt?: string; format?: InterviewFormat; duration?: number }) => void
+
+  // 导入导出
+  exportData: () => ExportPayload
+  importData: (payload: ExportPayload) => void
 }
 
 // ---- 展示文本映射 ----
