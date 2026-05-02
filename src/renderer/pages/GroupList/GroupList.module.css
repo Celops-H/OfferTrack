@@ -1,0 +1,71 @@
+.container {
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.header h2 {
+  margin: 0;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+.groupCard {
+  cursor: pointer;
+}
+
+.cardContent {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cardTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.folderIcon {
+  font-size: 28px;
+  color: #1677ff;
+}
+
+.moreBtn {
+  opacity: 0.4;
+}
+
+.moreBtn:hover {
+  opacity: 1;
+}
+
+.groupName {
+  font-size: 16px;
+  font-weight: 600;
+  color: #262626;
+}
+
+.defaultTag {
+  font-size: 11px;
+  color: #999;
+  background: #f0f0f0;
+  padding: 1px 6px;
+  border-radius: 4px;
+  margin-left: 8px;
+  vertical-align: middle;
+}
+
+.recordCount {
+  font-size: 13px;
+  color: #999;
+}

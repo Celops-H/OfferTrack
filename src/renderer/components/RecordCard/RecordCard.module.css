@@ -63,3 +63,15 @@
   align-items: center;
   justify-content: space-between;
 }
+
+.footerLeft {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.footerRight {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}

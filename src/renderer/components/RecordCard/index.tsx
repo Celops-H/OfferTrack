@@ -1,7 +1,8 @@
 import { Card, Tag, Button, Popconfirm, Typography } from 'antd'
 import { DeleteOutlined } from '@ant-design/icons'
 import dayjs from 'dayjs'
-import { InterviewRecord, Stage, STAGE_LABEL, END_STATUS_LABEL } from '../../types'
+import type { InterviewRecord } from '../../types'
+import { useRecordStore } from '../../store/useRecordStore'
 import StageProgress from '../StageProgress'
 import styles from './RecordCard.module.css'
 
@@ -13,33 +14,16 @@ interface Props {
   onClick: (id: string) => void
 }
 
-// 阶段标签颜色
-const STAGE_COLOR: Record<Stage, string> = {
-  [Stage.SCREENING]: 'blue',
-  [Stage.TECHNICAL]: 'orange',
-  [Stage.HR]: 'purple',
-  [Stage.OFFER]: 'green',
-  [Stage.ENDED]: 'default',
-}
-
-function getStageTag(record: InterviewRecord) {
-  if (record.stage === Stage.ENDED && record.endStatus) {
-    const colorMap = { offered: 'success', rejected: 'error', declined: 'warning' } as const
-    return <Tag color={colorMap[record.endStatus]}>{END_STATUS_LABEL[record.endStatus]}</Tag>
-  }
-  return <Tag color={STAGE_COLOR[record.stage]}>{STAGE_LABEL[record.stage]}</Tag>
-}
-
 export default function RecordCard({ record, onDelete, onClick }: Props) {
-  const isEnded = record.stage === Stage.ENDED
+  const groups = useRecordStore((s) => s.groups)
+  const group = groups.find((g) => g.id === record.groupId)
 
   return (
     <Card
-      className={`${styles.card} ${isEnded ? styles.ended : ''}`}
+      className={`${styles.card} ${record.isEnded ? styles.ended : ''}`}
       styles={{ body: { padding: '16px 20px' } }}
-      hoverable={!isEnded}
+      hoverable={!record.isEnded}
       onClick={(e) => {
-        // 避免点击删除按钮时触发卡片跳转
         if ((e.target as HTMLElement).closest('.ant-popover, .ant-btn')) return
         onClick(record.id)
       }}
@@ -50,38 +34,47 @@ export default function RecordCard({ record, onDelete, onClick }: Props) {
           <span className={styles.separator}>·</span>
           <span className={styles.position}>{record.position}</span>
         </div>
-        {getStageTag(record)}
+        {record.endReason && (
+          <Tag color={record.endReason === 'completed' ? 'success' : 'error'}>
+            {record.endReason === 'completed' ? '流程结束' : '流程终止'}
+          </Tag>
+        )}
       </div>
 
       <div className={styles.progress}>
-        <StageProgress stage={record.stage} endStatus={record.endStatus} />
+        <StageProgress nodes={record.stageNodes} />
       </div>
 
       <div className={styles.footer}>
-        <Text type="secondary" style={{ fontSize: 12 }}>
-          最近更新：{dayjs(record.updatedAt).format('YYYY-MM-DD')}
-        </Text>
-        <Popconfirm
-          title="确认删除？"
-          description="删除后无法恢复，确认删除该记录？"
-          onConfirm={(e) => {
-            e?.stopPropagation()
-            onDelete(record.id)
-          }}
-          okText="删除"
-          cancelText="取消"
-          okButtonProps={{ danger: true }}
-        >
-          <Button
-            type="text"
-            danger
-            size="small"
-            icon={<DeleteOutlined />}
-            onClick={(e) => e.stopPropagation()}
+        <div className={styles.footerLeft}>
+          {group && <Tag>{group.name}</Tag>}
+        </div>
+        <div className={styles.footerRight}>
+          <Text type="secondary" style={{ fontSize: 12 }}>
+            {dayjs(record.updatedAt).format('YYYY-MM-DD')}
+          </Text>
+          <Popconfirm
+            title="确认删除？"
+            description="删除后无法恢复，确认删除该记录？"
+            onConfirm={(e) => {
+              e?.stopPropagation()
+              onDelete(record.id)
+            }}
+            okText="删除"
+            cancelText="取消"
+            okButtonProps={{ danger: true }}
           >
-            删除
-          </Button>
-        </Popconfirm>
+            <Button
+              type="text"
+              danger
+              size="small"
+              icon={<DeleteOutlined />}
+              onClick={(e) => e.stopPropagation()}
+            >
+              删除
+            </Button>
+          </Popconfirm>
+        </div>
       </div>
     </Card>
   )

@@ -1,5 +1,6 @@
 import { Routes, Route } from 'react-router-dom'
 import Layout from './components/Layout'
+import GroupList from './pages/GroupList'
 import RecordList from './pages/RecordList'
 import Board from './pages/Board'
 import Calendar from './pages/Calendar'
@@ -10,7 +11,8 @@ function App() {
   return (
     <Routes>
       <Route element={<Layout />}>
-        <Route path="/" element={<RecordList />} />
+        <Route path="/" element={<GroupList />} />
+        <Route path="/group/:groupId" element={<RecordList />} />
         <Route path="/board" element={<Board />} />
         <Route path="/calendar" element={<Calendar />} />
         <Route path="/settings" element={<Settings />} />
