@@ -1,0 +1,16 @@
+appId: com.offer-track.app
+productName: OfferTrack
+directories:
+  buildResources: resources
+  output: release
+files:
+  - out
+  - package.json
+win:
+  target:
+    - nsis
+  artifactName: ${name}-${version}-setup.${ext}
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  shortcutName: OfferTrack
