@@ -1,0 +1,120 @@
+.container {
+  max-width: 860px;
+  margin: 0 auto;
+}
+
+.topBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.infoCard {
+  background: #fff;
+  border-radius: 8px;
+  padding: 24px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+
+.infoRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.infoLabel {
+  width: 72px;
+  flex-shrink: 0;
+  padding-top: 4px;
+  font-size: 13px;
+}
+
+.section {
+  background: #fff;
+  border-radius: 8px;
+  padding: 24px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  margin-bottom: 16px;
+}
+
+.progressArea {
+  padding: 16px 0;
+}
+
+.scheduleList {
+  margin-bottom: 12px;
+}
+
+.scheduleItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.scheduleNodeName {
+  font-weight: 600;
+  min-width: 80px;
+}
+
+.scheduleInfo {
+  flex: 1;
+  color: #666;
+  font-size: 13px;
+}
+
+.addScheduleHint {
+  margin-top: 8px;
+}
+
+.scheduleForm label {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 13px;
+  color: #666;
+}
+
+.sectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.editFlowList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.editFlowItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: #fafafa;
+  border-radius: 6px;
+}
+
+.editFlowInfo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.editFlowName {
+  font-weight: 600;
+}
+
+.editFlowStatus {
+  font-size: 12px;
+  color: #999;
+}
+
+.editFlowActions {
+  display: flex;
+  gap: 4px;
+}

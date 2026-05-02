@@ -1,0 +1,19 @@
+appId: com.offer-track.app
+productName: OfferTrack
+directories:
+  buildResources: resources
+  output: release
+files:
+  - out
+  - package.json
+win:
+  target:
+    - portable
+  artifactName: ${name}-${version}-portable.${ext}
+  signAndEditExecutable: false
+  forceCodeSigning: false
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  shortcutName: OfferTrack
+npmRebuild: false

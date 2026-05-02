@@ -1,0 +1,74 @@
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.container :global(.ant-picker-calendar) {
+  background: #fff;
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+
+.cell {
+  min-height: 80px;
+  padding: 4px 2px;
+}
+
+.dateNum {
+  font-size: 13px;
+  margin-bottom: 2px;
+  color: #666;
+}
+
+.event {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  cursor: pointer;
+  margin-bottom: 1px;
+}
+
+.event:hover {
+  opacity: 0.7;
+}
+
+.eventText {
+  font-size: 11px;
+  color: #1677ff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.popoverContent {
+  max-width: 280px;
+}
+
+.popoverDate {
+  font-weight: 600;
+  margin-bottom: 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.popoverItem {
+  padding: 6px 0;
+  border-bottom: 1px solid #f5f5f5;
+}
+
+.popoverItem:last-child {
+  border-bottom: none;
+}
+
+.popoverCompany {
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.popoverMeta {
+  font-size: 12px;
+  color: #666;
+  margin-top: 2px;
+}
