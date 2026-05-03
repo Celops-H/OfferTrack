@@ -7,11 +7,14 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
+  margin-bottom: 28px;
 }
 
 .header h2 {
   margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  color: #1a1a2e;
 }
 
 .grid {
@@ -22,12 +25,22 @@
 
 .groupCard {
   cursor: pointer;
+  border-radius: 12px !important;
+  border: 1px solid #eeeef2 !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.03) !important;
+  transition: all 0.25s !important;
+}
+
+.groupCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.08) !important;
+  border-color: #d0d8f0 !important;
 }
 
 .cardContent {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 }
 
 .cardTop {
@@ -37,12 +50,13 @@
 }
 
 .folderIcon {
-  font-size: 28px;
+  font-size: 32px;
   color: #1677ff;
 }
 
 .moreBtn {
-  opacity: 0.4;
+  opacity: 0.3;
+  transition: opacity 0.2s;
 }
 
 .moreBtn:hover {
@@ -52,17 +66,16 @@
 .groupName {
   font-size: 16px;
   font-weight: 600;
-  color: #262626;
+  color: #1a1a2e;
 }
 
 .defaultTag {
   font-size: 11px;
   color: #999;
-  background: #f0f0f0;
-  padding: 1px 6px;
-  border-radius: 4px;
+  background: #f0f0f5;
+  padding: 2px 8px;
+  border-radius: 10px;
   margin-left: 8px;
-  vertical-align: middle;
 }
 
 .recordCount {

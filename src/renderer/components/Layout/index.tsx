@@ -32,7 +32,6 @@ export default function Layout() {
       const ok = await window.electronAPI.exportData(json)
       if (ok) message.success('导出成功')
     } else {
-      // 浏览器降级：下载文件
       const blob = new Blob([json], { type: 'application/json' })
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
@@ -47,10 +46,9 @@ export default function Layout() {
   const handleImport = async () => {
     if (window.electronAPI) {
       const content = await window.electronAPI.importData()
-      if (!content) return // 用户取消
+      if (!content) return
       processImportContent(content)
     } else {
-      // 浏览器降级：文件选择
       const input = document.createElement('input')
       input.type = 'file'
       input.accept = '.json'
@@ -102,7 +100,6 @@ export default function Layout() {
     }
   }
 
-  // 当前路径匹配的导航 key（处理 /group/:id 等子路由）
   const selectedKey = navItems.find((item) => {
     if (item.key === '/') return location.pathname === '/' || location.pathname.startsWith('/group/')
     return location.pathname.startsWith(item.key)
@@ -110,8 +107,28 @@ export default function Layout() {
 
   return (
     <AntLayout style={{ minHeight: '100vh' }}>
-      <Header style={{ display: 'flex', alignItems: 'center', padding: '0 24px', background: '#fff', borderBottom: '1px solid #f0f0f0' }}>
-        <div style={{ fontSize: 20, fontWeight: 700, color: '#1677ff', marginRight: 32, whiteSpace: 'nowrap', cursor: 'pointer' }} onClick={() => navigate('/')}>
+      <Header style={{
+        display: 'flex',
+        alignItems: 'center',
+        padding: '0 28px',
+        background: '#fff',
+        borderBottom: '1px solid #eeeef2',
+        height: 52,
+        lineHeight: '52px',
+        boxShadow: '0 1px 4px rgba(0,0,0,0.03)',
+      }}>
+        <div
+          style={{
+            fontSize: 18,
+            fontWeight: 700,
+            color: '#1677ff',
+            marginRight: 28,
+            whiteSpace: 'nowrap',
+            cursor: 'pointer',
+            letterSpacing: '-0.5px',
+          }}
+          onClick={() => navigate('/')}
+        >
           OfferTrack
         </div>
         <Menu
@@ -119,7 +136,7 @@ export default function Layout() {
           selectedKeys={[selectedKey]}
           items={navItems}
           onClick={({ key }) => navigate(key)}
-          style={{ flex: 1, border: 'none' }}
+          style={{ flex: 1, border: 'none', background: 'transparent', fontSize: 14 }}
         />
         <Space size={4}>
           <Button type="text" icon={<ExportOutlined />} onClick={handleExport}>导出</Button>
@@ -127,11 +144,10 @@ export default function Layout() {
           <Button type="text" icon={<PoweroffOutlined />} onClick={handleCloseApp} />
         </Space>
       </Header>
-      <Content style={{ padding: '24px', background: '#f5f7fa' }}>
+      <Content style={{ padding: '28px 28px', background: '#f0f2f5' }}>
         <Outlet />
       </Content>
 
-      {/* 导入确认弹窗 */}
       <Modal
         title="确认导入数据"
         open={importModalOpen}

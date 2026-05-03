@@ -68,85 +68,87 @@ export default function Settings() {
         className={styles.alert}
       />
 
-      <List
-        dataSource={stageTemplates}
-        renderItem={(item, index) => (
-          <List.Item
-            actions={[
-              <Button
-                key="up"
-                type="text"
-                icon={<ArrowUpOutlined />}
-                disabled={index === 0}
-                onClick={() => moveUp(index)}
-              />,
-              <Button
-                key="down"
-                type="text"
-                icon={<ArrowDownOutlined />}
-                disabled={index === stageTemplates.length - 1}
-                onClick={() => moveDown(index)}
-              />,
-              editingId === item.id ? (
-                <Space key="edit-actions">
-                  <Button type="link" onClick={() => handleRename(item.id)}>确认</Button>
-                  <Button type="link" onClick={() => setEditingId(null)}>取消</Button>
-                </Space>
-              ) : (
+      <div className={styles.listCard}>
+        <List
+          dataSource={stageTemplates}
+          renderItem={(item, index) => (
+            <List.Item
+              actions={[
                 <Button
-                  key="edit"
+                  key="up"
                   type="text"
-                  icon={<EditOutlined />}
-                  onClick={() => startEdit(item)}
-                />
-              ),
-              <Popconfirm
-                key="delete"
-                title="删除节点模板"
-                description={
-                  stageTemplates.length <= 1
-                    ? '至少保留 1 个节点模板'
-                    : getUsageCount(item.id) > 0
-                      ? `该节点正在被 ${getUsageCount(item.id)} 条记录使用，删除后不影响已有记录，但无法再用于新建记录。`
-                      : '确定删除该节点模板？'
-                }
-                onConfirm={() => handleDelete(item.id)}
-                okText="确认删除"
-                cancelText="取消"
-                disabled={stageTemplates.length <= 1}
-              >
+                  icon={<ArrowUpOutlined />}
+                  disabled={index === 0}
+                  onClick={() => moveUp(index)}
+                />,
                 <Button
+                  key="down"
                   type="text"
-                  danger
-                  icon={<DeleteOutlined />}
-                  disabled={stageTemplates.length <= 1}
-                />
-              </Popconfirm>,
-            ]}
-          >
-            <List.Item.Meta
-              title={
+                  icon={<ArrowDownOutlined />}
+                  disabled={index === stageTemplates.length - 1}
+                  onClick={() => moveDown(index)}
+                />,
                 editingId === item.id ? (
-                  <Input
-                    value={editName}
-                    onChange={(e) => setEditName(e.target.value)}
-                    onPressEnter={() => handleRename(item.id)}
-                    autoFocus
-                    style={{ width: 200 }}
-                  />
+                  <Space key="edit-actions">
+                    <Button type="link" onClick={() => handleRename(item.id)}>确认</Button>
+                    <Button type="link" onClick={() => setEditingId(null)}>取消</Button>
+                  </Space>
                 ) : (
-                  <span>
-                    {item.name}
-                    {getUsageCount(item.id) > 0 && (
-                      <span className={styles.usage}> · {getUsageCount(item.id)} 条记录使用</span>
-                    )}
-                  </span>
-                )
-              }
-            />
-          </List.Item>
-        )}
-      />
+                  <Button
+                    key="edit"
+                    type="text"
+                    icon={<EditOutlined />}
+                    onClick={() => startEdit(item)}
+                  />
+                ),
+                <Popconfirm
+                  key="delete"
+                  title="删除节点模板"
+                  description={
+                    stageTemplates.length <= 1
+                      ? '至少保留 1 个节点模板'
+                      : getUsageCount(item.id) > 0
+                        ? `该节点正在被 ${getUsageCount(item.id)} 条记录使用，删除后不影响已有记录，但无法再用于新建记录。`
+                        : '确定删除该节点模板？'
+                  }
+                  onConfirm={() => handleDelete(item.id)}
+                  okText="确认删除"
+                  cancelText="取消"
+                  disabled={stageTemplates.length <= 1}
+                >
+                  <Button
+                    type="text"
+                    danger
+                    icon={<DeleteOutlined />}
+                    disabled={stageTemplates.length <= 1}
+                  />
+                </Popconfirm>,
+              ]}
+            >
+              <List.Item.Meta
+                title={
+                  editingId === item.id ? (
+                    <Input
+                      value={editName}
+                      onChange={(e) => setEditName(e.target.value)}
+                      onPressEnter={() => handleRename(item.id)}
+                      autoFocus
+                      style={{ width: 200 }}
+                    />
+                  ) : (
+                    <span>
+                      {item.name}
+                      {getUsageCount(item.id) > 0 && (
+                        <span className={styles.usage}> · {getUsageCount(item.id)} 条记录使用</span>
+                      )}
+                    </span>
+                  )
+                }
+              />
+            </List.Item>
+          )}
+        />
+      </div>
 
       <Modal
         title="新增流程节点"

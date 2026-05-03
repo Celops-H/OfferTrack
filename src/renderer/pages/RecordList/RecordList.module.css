@@ -7,12 +7,14 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
 }
 
 .groupTitle {
   margin: 0;
-  font-size: 20px;
+  font-size: 22px;
+  font-weight: 700;
+  color: #1a1a2e;
 }
 
 .toolbar {
@@ -29,6 +31,7 @@
 .pagination {
   display: flex;
   justify-content: center;
+  padding: 16px 0;
 }
 
 .formFields {
@@ -42,6 +45,7 @@
 .templateLabel {
   margin-bottom: 8px;
   color: #666;
+  font-size: 13px;
 }
 
 .checkboxList {

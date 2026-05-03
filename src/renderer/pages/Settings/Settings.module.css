@@ -1,25 +1,37 @@
 .container {
   max-width: 720px;
   margin: 0 auto;
-  padding: 24px;
 }
 
 .header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
+  margin-bottom: 20px;
 }
 
 .header h2 {
   margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  color: #1a1a2e;
 }
 
 .alert {
-  margin-bottom: 16px;
+  margin-bottom: 20px;
+  border-radius: 8px !important;
+}
+
+.listCard {
+  background: #fff;
+  border-radius: 12px;
+  padding: 8px 16px;
+  border: 1px solid #eeeef2;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
 }
 
 .usage {
   color: #999;
-  font-size: 13px;
+  font-size: 12px;
+  margin-left: 4px;
 }
