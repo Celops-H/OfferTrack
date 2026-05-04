@@ -47,7 +47,7 @@ Electron 桌面应用，主进程 + 渲染进程架构。
 
 ### 2.3 UI：Ant Design 5
 
-继续使用。主要用到的组件：Tabs、Modal、Form、Input、Select、Pagination、Calendar、Popover、Tag、Card、Empty、Popconfirm、Button、Dropdown。
+继续使用。主要用到的组件：Tabs、Modal、Form、Input、Select、Pagination、Popover、Tag、Card、Empty、Popconfirm、Button、Dropdown。日历组件为自定义实现（非 Ant Design Calendar），以便支持农历显示、中文周标题和滚轮切换月份。
 
 ### 2.4 路由：React Router v6
 
@@ -127,6 +127,8 @@ interface InterviewRecord {
 - 存在 `terminated` 节点 → `isEnded: true, endReason: 'terminated'`
 - 所有节点 `passed` → `isEnded: true, endReason: 'completed'`
 - 存在 `ongoing` 节点 → `isEnded: false`
+
+**农历日历：** 使用 `lunar-javascript` 库转换公历到农历，支持节气、农历节日和公历节日显示。日历组件为自定义实现（CSS Grid），非 Ant Design Calendar。
 
 **删除的 v1.0 概念：** Stage 枚举、EndStatus 枚举、Round/RoundType 接口、interviewDocUrl、selfRating。
 
