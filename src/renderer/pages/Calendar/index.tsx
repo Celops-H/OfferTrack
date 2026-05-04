@@ -247,20 +247,21 @@ export default function Calendar() {
                 </span>
               )}
               {hasEvents && (
-                <div className={styles.eventDots}>
-                  {day.events.slice(0, 4).map((ev, i) => (
+                <div className={styles.eventList}>
+                  {day.events.slice(0, 2).map((ev, i) => (
                     <span
                       key={i}
-                      className={styles.eventDot}
+                      className={styles.eventText}
                       onClick={(e) => {
                         e.stopPropagation()
                         navigate(`/record/${ev.recordId}`)
                       }}
-                      title={`${ev.companyName} · ${ev.nodeName} · ${dayjs(ev.scheduledAt).format('HH:mm')}`}
-                    />
+                    >
+                      {ev.companyName}
+                    </span>
                   ))}
-                  {day.events.length > 4 && (
-                    <span className={styles.eventMore}>+{day.events.length - 4}</span>
+                  {day.events.length > 2 && (
+                    <span className={styles.eventMore}>+{day.events.length - 2}</span>
                   )}
                 </div>
               )}

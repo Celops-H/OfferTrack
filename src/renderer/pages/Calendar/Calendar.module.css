@@ -188,35 +188,37 @@
   color: #ddd;
 }
 
-/* 事件点 */
-.eventDots {
+/* 事件文字 */
+.eventList {
   display: flex;
-  gap: 3px;
+  flex-direction: column;
+  gap: 1px;
   margin-top: auto;
   padding-bottom: 2px;
-  flex-wrap: wrap;
-  justify-content: center;
+  width: 100%;
 }
 
-.eventDot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: #1677ff;
+.eventText {
+  font-size: 10px;
+  color: #1677ff;
   cursor: pointer;
-  transition: transform 0.15s;
-  box-shadow: 0 0 0 1px rgba(22, 119, 255, 0.15);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 1px 2px;
+  border-radius: 2px;
+  line-height: 1.4;
+  transition: background 0.15s;
 }
 
-.eventDot:hover {
-  transform: scale(1.8);
-  background: #4096ff;
+.eventText:hover {
+  background: #e8f4fd;
 }
 
 .eventMore {
   font-size: 10px;
   color: #999;
-  line-height: 1;
+  padding-left: 2px;
 }
 
 /* Popover 内容 */

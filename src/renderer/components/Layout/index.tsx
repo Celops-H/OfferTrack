@@ -3,7 +3,7 @@ import { Layout as AntLayout, Menu, Button, Modal, Space, message } from 'antd'
 import { Outlet, useNavigate, useLocation } from 'react-router-dom'
 import {
   UnorderedListOutlined, AppstoreOutlined, CalendarOutlined, SettingOutlined,
-  ExportOutlined, ImportOutlined, PoweroffOutlined
+  ExportOutlined, ImportOutlined
 } from '@ant-design/icons'
 import { useRecordStore } from '../../store/useRecordStore'
 
@@ -92,14 +92,6 @@ export default function Layout() {
     }
   }
 
-  const handleCloseApp = () => {
-    if (window.electronAPI) {
-      window.electronAPI.closeApp()
-    } else {
-      message.info('桌面应用模式下可用')
-    }
-  }
-
   const selectedKey = navItems.find((item) => {
     if (item.key === '/') return location.pathname === '/' || location.pathname.startsWith('/group/')
     return location.pathname.startsWith(item.key)
@@ -141,7 +133,6 @@ export default function Layout() {
         <Space size={4}>
           <Button type="text" icon={<ExportOutlined />} onClick={handleExport}>导出</Button>
           <Button type="text" icon={<ImportOutlined />} onClick={handleImport}>导入</Button>
-          <Button type="text" icon={<PoweroffOutlined />} onClick={handleCloseApp} />
         </Space>
       </Header>
       <Content style={{ padding: '28px 28px', background: '#f0f2f5' }}>
